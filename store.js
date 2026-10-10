@@ -1,0 +1,122 @@
+import { hojeISO } from './util.js';
+
+const CHAVE = 'cubagem:v1';
+
+export function novoId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+export function novoItem(tipo, hoje = hojeISO()) {
+  const base = { id: novoId(), tipo, especie: '', data: hoje, atualizado: 0 };
+  return tipo === 'pacote'
+    ? { ...base, numero: '', qualidade: '', pecas: [] }
+    : { ...base, toras: [] };
+}
+
+const numerico = (obj, chaves) => !!obj && typeof obj === 'object' && chaves.every(k => Number.isFinite(obj[k]));
+
+function itemValido(i) {
+  if (!i || typeof i !== 'object' || typeof i.id !== 'string' || i.id === '') return false;
+  if (i.tipo === 'pacote') {
+    return Array.isArray(i.pecas) && i.pecas.every(p => numerico(p, ['esp', 'larg', 'comp', 'qtd']));
+  }
+  if (i.tipo === 'toras') {
+    return Array.isArray(i.toras) && i.toras.every(t => numerico(t, ['cerne', 'ponta', 'pe', 'comp']));
+  }
+  return false;
+}
+
+function carregar(storage) {
+  try {
+    const bruto = storage.getItem(CHAVE);
+    const dados = bruto ? JSON.parse(bruto) : [];
+    return Array.isArray(dados) ? dados.filter(itemValido) : [];
+  } catch {
+    return [];
+  }
+}
+
+const ERRO_ARQUIVO = 'O arquivo não é uma cópia de segurança válida do app de cubagem.';
+
+export function criarStore(storage) {
+  let itens = carregar(storage);
+  let persistente = true;
+  let relogio = itens.reduce((maior, i) => Math.max(maior, i.atualizado || 0), 0);
+  const agora = () => (relogio = Math.max(Date.now(), relogio + 1));
+
+  const gravar = () => {
+    try {
+      storage.setItem(CHAVE, JSON.stringify(itens));
+      persistente = true;
+    } catch {
+      persistente = false;
+    }
+  };
+
+  const gravarItem = item => {
+    const novo = { ...item, atualizado: agora() };
+    itens = itens.some(i => i.id === item.id)
+      ? itens.map(i => (i.id === item.id ? novo : i))
+      : [...itens, novo];
+    return novo;
+  };
+
+  return {
+    listar: () => [...itens].sort((a, b) => b.atualizado - a.atualizado),
+    obter: id => itens.find(i => i.id === id) ?? null,
+    salvar(item) {
+      const novo = gravarItem(item);
+      gravar();
+      return novo;
+    },
+    apagar(id) {
+      itens = itens.filter(i => i.id !== id);
+      gravar();
+    },
+    // Cópia independente: id novo, data de hoje e, no pacote, sem número (para não repetir o número).
+    duplicar(id, hoje = hojeISO()) {
+      const original = itens.find(i => i.id === id);
+      if (!original) return null;
+      const copia = { ...structuredClone(original), id: novoId(), data: hoje };
+      if (copia.tipo === 'pacote') copia.numero = '';
+      const nova = gravarItem(copia);
+      gravar();
+      return nova;
+    },
+    persistente: () => persistente,
+    exportar: () => JSON.stringify({ app: 'cubagem', versao: 1, itens }, null, 2),
+    importar(texto) {
+      let dados;
+      try {
+        dados = JSON.parse(texto);
+      } catch {
+        return { ok: false, erro: ERRO_ARQUIVO };
+      }
+      if (!dados || dados.app !== 'cubagem' || !Array.isArray(dados.itens)) {
+        return { ok: false, erro: ERRO_ARQUIVO };
+      }
+      const validos = dados.itens.filter(itemValido);
+      if (validos.length === 0) {
+        return { ok: false, erro: 'A cópia de segurança não tem nenhum lançamento válido.' };
+      }
+      // Nunca sobrescreve o que já existe: igual = ignora; diferente = entra como cópia com id novo.
+      const semRelogio = i => JSON.stringify({ ...i, atualizado: 0 });
+      let importados = 0;
+      let repetidos = 0;
+      for (const item of validos) {
+        const local = itens.find(i => i.id === item.id);
+        if (!local) {
+          gravarItem(item);
+          importados++;
+        } else if (semRelogio(local) === semRelogio(item)) {
+          repetidos++;
+        } else {
+          gravarItem({ ...item, id: novoId() });
+          importados++;
+        }
+      }
+      gravar();
+      return { ok: true, importados, ignorados: dados.itens.length - validos.length + repetidos };
+    },
+  };
+}

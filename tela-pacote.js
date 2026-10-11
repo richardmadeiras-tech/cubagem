@@ -1,6 +1,6 @@
 import { esc, fmt2, fmt3, fmtNum, parseDecimal } from './util.js';
 import {
-  validarPeca, adicionarPeca, substituirPeca, pecasDeComprimentos, totaisPacote, volumePeca,
+  acabamentoDe, validarPeca, adicionarPeca, substituirPeca, pecasDeComprimentos, totaisPacote, volumePeca,
 } from './calc.js';
 import { textoPacote } from './share-text.js';
 import { enviarWhatsApp, copiarTexto } from './compartilhar.js';
@@ -13,6 +13,15 @@ export function htmlLinhaComprimento() {
         <label>Comprimento (m)<input data-comp inputmode="decimal" autocomplete="off"></label>
         <label>Qtd<input data-qtd inputmode="numeric" autocomplete="off" value="1"></label>
       </div>`;
+}
+
+// Total do pacote: serrado mostra m³ primeiro e aplainado mostra m² primeiro.
+export function textoTotal(p) {
+  const t = totaisPacote(p.pecas);
+  const pecas = `${t.pecas} ${t.pecas === 1 ? 'peça' : 'peças'}`;
+  const m3 = `${fmt3(t.m3)} m³`;
+  const m2 = `${fmt2(t.m2)} m²`;
+  return acabamentoDe(p) === 'aplainado' ? `${pecas} = ${m2} · ${m3}` : `${pecas} = ${m3} · ${m2}`;
 }
 
 // `editando` = índice da linha que está sendo corrigida (ou null para lançar peças novas).
@@ -49,7 +58,11 @@ export function htmlPacote(p, memoria = { esp: '', larg: '' }, editando = null) 
     : `<div class="comprimentos larga" id="comprimentos">${htmlLinhaComprimento().repeat(LINHAS_INICIAIS)}</div>
       <button class="larga" type="button" data-acao="mais-comprimento">+ Outro comprimento</button>
       <button class="primario" type="submit">Adicionar peças</button>`;
+  const acabamento = acabamentoDe(p);
+  const opcao = (valor, rotulo) =>
+    `<button type="button" class="opcao" data-acabamento="${valor}" aria-pressed="${acabamento === valor}">${rotulo}</button>`;
   return `
+    <div class="seletor" role="group" aria-label="Acabamento do pacote">${opcao('serrado', 'Serrado')}${opcao('aplainado', 'Aplainado')}</div>
     <section class="cab">
       <label>Nº do pacote<input data-campo="numero" value="${esc(p.numero)}" autocomplete="off"></label>
       <label>Espécie<input data-campo="especie" value="${esc(p.especie)}" autocomplete="off"></label>
@@ -67,7 +80,7 @@ export function htmlPacote(p, memoria = { esp: '', larg: '' }, editando = null) 
       </table>
     </div>
     ${semPecas ? '' : '<p class="dica">Toque nas medidas de uma linha para corrigir.</p>'}
-    <div class="total" id="total">${t.pecas} ${t.pecas === 1 ? 'peça' : 'peças'} = ${fmt3(t.m3)} m³ · ${fmt2(t.m2)} m²</div>
+    <div class="total" id="total">${textoTotal(p)}</div>
     <div class="acoes">
       <button class="primario" data-acao="whatsapp" ${semPecas ? 'disabled' : ''}>Enviar no WhatsApp</button>
       <button data-acao="copiar" ${semPecas ? 'disabled' : ''}>Copiar texto</button>
@@ -136,6 +149,15 @@ export function montarPacote({ raiz, store, avisar, titulo }, id) {
       lista.insertAdjacentHTML('beforeend', htmlLinhaComprimento());
       lista.lastElementChild.querySelector('[data-comp]').focus();
     });
+
+    // Troca o acabamento sem redesenhar a tela (não perde o que está sendo digitado).
+    raiz.querySelectorAll('[data-acabamento]').forEach(botao =>
+      botao.addEventListener('click', () => {
+        salvar({ acabamento: botao.dataset.acabamento });
+        raiz.querySelectorAll('[data-acabamento]').forEach(b => b.setAttribute('aria-pressed', String(b === botao)));
+        raiz.querySelector('#total').textContent = textoTotal(atual);
+      }),
+    );
 
     raiz.querySelector('[data-acao="cancelar-edicao"]')?.addEventListener('click', () => {
       editando = null;

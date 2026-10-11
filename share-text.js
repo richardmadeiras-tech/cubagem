@@ -1,5 +1,5 @@
 import { fmt2, fmt3, fmtNum } from './util.js';
-import { volumePeca, totaisPacote, volumeCompra, volumeIbama, totaisLote } from './calc.js';
+import { acabamentoDe, volumePeca, totaisPacote, volumeCompra, volumeIbama, totaisLote } from './calc.js';
 
 export function dataBR(iso) {
   const [ano, mes, dia] = String(iso ?? '').split('-');
@@ -9,7 +9,8 @@ export function dataBR(iso) {
 const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
 
 export function textoPacote(pacote) {
-  const titulo = ['PACOTE' + (pacote.numero ? ' ' + pacote.numero : ''), pacote.especie, pacote.qualidade]
+  const aplainado = acabamentoDe(pacote) === 'aplainado';
+  const titulo = ['PACOTE' + (pacote.numero ? ' ' + pacote.numero : ''), pacote.especie, pacote.qualidade, aplainado ? 'APLAINADO' : 'SERRADO']
     .filter(Boolean)
     .join(' – ');
   const data = dataBR(pacote.data);
@@ -23,7 +24,7 @@ export function textoPacote(pacote) {
     '',
     ...linhas,
     '',
-    `TOTAL: ${plural(t.pecas, 'peça', 'peças')} = ${fmt3(t.m3)} m³ (${fmt2(t.m2)} m²)`,
+    `TOTAL: ${plural(t.pecas, 'peça', 'peças')} = ${aplainado ? `${fmt2(t.m2)} m² (${fmt3(t.m3)} m³)` : `${fmt3(t.m3)} m³ (${fmt2(t.m2)} m²)`}`,
   ].join('\n');
 }
 

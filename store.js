@@ -9,7 +9,7 @@ export function novoId() {
 export function novoItem(tipo, hoje = hojeISO()) {
   const base = { id: novoId(), tipo, especie: '', data: hoje, atualizado: 0 };
   return tipo === 'pacote'
-    ? { ...base, numero: '', qualidade: '', pecas: [] }
+    ? { ...base, numero: '', qualidade: '', acabamento: 'serrado', pecas: [] }
     : { ...base, toras: [] };
 }
 

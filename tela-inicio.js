@@ -1,5 +1,5 @@
 import { esc, fmt2, fmt3, NOME_APP } from './util.js';
-import { totaisPacote, totaisLote } from './calc.js';
+import { acabamentoDe, totaisPacote, totaisLote } from './calc.js';
 import { dataBR } from './share-text.js';
 import { novoItem } from './store.js';
 import { baixarBackup } from './compartilhar.js';
@@ -7,7 +7,16 @@ import { baixarBackup } from './compartilhar.js';
 export function resumo(item) {
   if (item.tipo === 'pacote') {
     const t = totaisPacote(item.pecas);
-    const partes = [`Pacote ${item.numero || '(sem nº)'}`, item.especie, `${t.pecas} pç`, `${fmt3(t.m3)} m³`, `${fmt2(t.m2)} m²`];
+    const aplainado = acabamentoDe(item) === 'aplainado';
+    const m3 = `${fmt3(t.m3)} m³`;
+    const m2 = `${fmt2(t.m2)} m²`;
+    const partes = [
+      `Pacote ${item.numero || '(sem nº)'}`,
+      item.especie,
+      aplainado ? 'Aplainado' : 'Serrado',
+      `${t.pecas} pç`,
+      ...(aplainado ? [m2, m3] : [m3, m2]),
+    ];
     return '📦 ' + partes.filter(Boolean).join(' · ');
   }
   const t = totaisLote(item.toras);

@@ -64,6 +64,11 @@ export function substituirPeca(pecas, indice, nova) {
   return adicionarPeca(pecas.filter((_, i) => i !== indice), nova);
 }
 
+// Acabamento do pacote: "aplainado" só quando está marcado; qualquer outra coisa (inclusive lançamento antigo) é serrado.
+export function acabamentoDe(pacote) {
+  return pacote?.acabamento === 'aplainado' ? 'aplainado' : 'serrado';
+}
+
 // Área da face larga em m² (larg em cm, comp em m). É a conversão de m³ para m²: m³ ÷ espessura.
 export function areaPeca({ larg, comp, qtd }) {
   return (larg / 100) * comp * qtd;

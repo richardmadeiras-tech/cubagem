@@ -1,4 +1,4 @@
-import { esc, fmt3 } from './util.js';
+import { esc, fmt2, fmt3, NOME_APP } from './util.js';
 import { totaisPacote, totaisLote } from './calc.js';
 import { dataBR } from './share-text.js';
 import { novoItem } from './store.js';
@@ -7,7 +7,7 @@ import { baixarBackup } from './compartilhar.js';
 export function resumo(item) {
   if (item.tipo === 'pacote') {
     const t = totaisPacote(item.pecas);
-    const partes = [`Pacote ${item.numero || '(sem nº)'}`, item.especie, `${t.pecas} pç`, `${fmt3(t.m3)} m³`];
+    const partes = [`Pacote ${item.numero || '(sem nº)'}`, item.especie, `${t.pecas} pç`, `${fmt3(t.m3)} m³`, `${fmt2(t.m2)} m²`];
     return '📦 ' + partes.filter(Boolean).join(' · ');
   }
   const t = totaisLote(item.toras);
@@ -49,7 +49,7 @@ export function htmlInicio(itens, persistente) {
 }
 
 export function montarInicio({ raiz, store, avisar, ir, titulo }) {
-  titulo('Cubagem', false);
+  titulo(NOME_APP, false);
   raiz.innerHTML = htmlInicio(store.listar(), store.persistente());
 
   raiz.querySelectorAll('[data-acao="novo"]').forEach(botao =>

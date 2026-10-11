@@ -1,4 +1,4 @@
-import { esc, fmt3, fmtNum, parseDecimal } from './util.js';
+import { esc, fmt2, fmt3, fmtNum, parseDecimal } from './util.js';
 import {
   validarPeca, adicionarPeca, substituirPeca, pecasDeComprimentos, totaisPacote, volumePeca,
 } from './calc.js';
@@ -67,7 +67,7 @@ export function htmlPacote(p, memoria = { esp: '', larg: '' }, editando = null) 
       </table>
     </div>
     ${semPecas ? '' : '<p class="dica">Toque nas medidas de uma linha para corrigir.</p>'}
-    <div class="total" id="total">${t.pecas} ${t.pecas === 1 ? 'peça' : 'peças'} = ${fmt3(t.m3)} m³</div>
+    <div class="total" id="total">${t.pecas} ${t.pecas === 1 ? 'peça' : 'peças'} = ${fmt3(t.m3)} m³ · ${fmt2(t.m2)} m²</div>
     <div class="acoes">
       <button class="primario" data-acao="whatsapp" ${semPecas ? 'disabled' : ''}>Enviar no WhatsApp</button>
       <button data-acao="copiar" ${semPecas ? 'disabled' : ''}>Copiar texto</button>

@@ -1,12 +1,7 @@
 :root {
-  --verde: #2e6b34; --verde-esc: #1f4a24; --fundo: #fbf7ef; --papel: #ffffff;
-  --texto: #2a2118; --suave: #7a6a58; --linha: #e3d9c8; --alerta: #b3261e;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --verde: #4f9a57; --verde-esc: #3b7a42; --fundo: #1a1712; --papel: #262119;
-    --texto: #f2eadc; --suave: #b4a58f; --linha: #3a3226; --alerta: #ff8a80;
-  }
+  color-scheme: dark;
+  --amarelo: #ffc400; --amarelo-esc: #b88a00; --fundo: #111111; --papel: #1e1e1e;
+  --texto: #f5f5f5; --suave: #b9b9b9; --linha: #3a3a3a; --alerta: #ff7b6e;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -18,10 +13,11 @@ body {
 button, input { font: inherit; color: inherit; }
 .topo {
   position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 8px;
-  padding: 8px 16px; padding-top: calc(8px + env(safe-area-inset-top)); background: var(--verde); color: #fff;
+  padding: 8px 16px; padding-top: calc(8px + env(safe-area-inset-top));
+  background: var(--fundo); color: var(--amarelo); border-bottom: 3px solid var(--amarelo);
 }
-.topo h1 { margin: 0; font-size: 1.2rem; }
-#voltar { background: transparent; color: #fff; border: 0; font-size: 1.7rem; min-width: 44px; min-height: 44px; padding: 0; }
+.topo h1 { margin: 0; font-size: 1.25rem; letter-spacing: .02em; }
+#voltar { background: transparent; color: var(--amarelo); border: 0; font-size: 1.7rem; min-width: 44px; min-height: 44px; padding: 0; }
 main { max-width: 640px; margin: 0 auto; padding: 16px; padding-bottom: 96px; }
 h2 { font-size: 1.05rem; margin: 20px 0 8px; color: var(--suave); text-transform: uppercase; letter-spacing: .04em; }
 
@@ -29,10 +25,11 @@ button, .botao {
   display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 16px;
   border-radius: 12px; border: 1px solid var(--linha); background: var(--papel); cursor: pointer;
 }
-button.primario { background: var(--verde); color: #fff; border-color: var(--verde-esc); font-weight: 600; }
+button.primario { background: var(--amarelo); color: var(--fundo); border-color: var(--amarelo-esc); font-weight: 700; }
 button:disabled { opacity: .45; cursor: not-allowed; }
 button.grande { min-height: 96px; font-size: 1.4rem; flex: 1; }
 .botoes-grandes { display: flex; gap: 12px; }
+button:focus-visible, input:focus-visible, .botao:focus-within { outline: 3px solid var(--amarelo); outline-offset: 2px; }
 
 .cartao { display: flex; gap: 8px; margin-bottom: 8px; }
 .cartao-abrir { flex: 1; flex-direction: column; align-items: flex-start; justify-content: center; text-align: left; padding: 10px 14px; }
@@ -56,9 +53,9 @@ input {
 table { width: 100%; border-collapse: collapse; font-size: .95rem; }
 th, td { padding: 8px 3px; text-align: right; border-bottom: 1px solid var(--linha); white-space: nowrap; }
 td .icone { min-width: 36px; }
-th { color: var(--suave); font-weight: 600; }
+th { color: var(--amarelo); font-weight: 600; }
 td.editavel { cursor: pointer; text-decoration: underline dotted var(--suave); text-underline-offset: 4px; }
-tr.em-edicao td { background: color-mix(in srgb, var(--verde) 14%, transparent); }
+tr.em-edicao td { background: color-mix(in srgb, var(--amarelo) 16%, transparent); }
 td small { color: var(--suave); font-size: .75rem; }
 td.qtd { text-align: center; }
 td.qtd span { display: inline-block; min-width: 28px; text-align: center; }
@@ -66,7 +63,7 @@ td.qtd span { display: inline-block; min-width: 28px; text-align: center; }
 
 .total {
   margin: 16px 0; padding: 14px; border-radius: 12px; background: var(--papel);
-  border: 2px solid var(--verde); font-weight: 700; font-size: 1.15rem;
+  border: 2px solid var(--amarelo); font-weight: 700; font-size: 1.15rem;
 }
 .acoes { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
 .acoes > * { flex: 1; }
@@ -75,5 +72,6 @@ td.qtd span { display: inline-block; min-width: 28px; text-align: center; }
 #aviso {
   position: fixed; left: 16px; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom));
   max-width: 608px; margin: 0 auto; padding: 12px 16px; border-radius: 12px;
-  background: #222; color: #fff; font-size: 1rem; z-index: 10;
+  background: var(--papel); color: var(--texto); border: 2px solid var(--amarelo);
+  font-weight: 600; font-size: 1rem; z-index: 10; box-shadow: 0 4px 16px rgba(0, 0, 0, .6);
 }

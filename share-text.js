@@ -1,4 +1,4 @@
-import { fmt3, fmtNum } from './util.js';
+import { fmt2, fmt3, fmtNum } from './util.js';
 import { volumePeca, totaisPacote, volumeCompra, volumeIbama, totaisLote } from './calc.js';
 
 export function dataBR(iso) {
@@ -23,7 +23,7 @@ export function textoPacote(pacote) {
     '',
     ...linhas,
     '',
-    `TOTAL: ${plural(t.pecas, 'peça', 'peças')} = ${fmt3(t.m3)} m³`,
+    `TOTAL: ${plural(t.pecas, 'peça', 'peças')} = ${fmt3(t.m3)} m³ (${fmt2(t.m2)} m²)`,
   ].join('\n');
 }
 

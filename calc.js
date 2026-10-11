@@ -64,10 +64,16 @@ export function substituirPeca(pecas, indice, nova) {
   return adicionarPeca(pecas.filter((_, i) => i !== indice), nova);
 }
 
+// Área da face larga em m² (larg em cm, comp em m). É a conversão de m³ para m²: m³ ÷ espessura.
+export function areaPeca({ larg, comp, qtd }) {
+  return (larg / 100) * comp * qtd;
+}
+
 export function totaisPacote(pecas) {
   return {
     pecas: pecas.reduce((soma, p) => soma + p.qtd, 0),
     m3: pecas.reduce((soma, p) => soma + volumePeca(p), 0),
+    m2: pecas.reduce((soma, p) => soma + areaPeca(p), 0),
   };
 }
 

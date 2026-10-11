@@ -1,4 +1,5 @@
 import { criarStore } from './store.js';
+import { NOME_APP } from './util.js';
 import { montarInicio } from './tela-inicio.js';
 import { montarPacote } from './tela-pacote.js';
 import { montarToras } from './tela-toras.js';
@@ -29,7 +30,7 @@ function avisar(mensagem) {
 function titulo(texto, comVoltar) {
   tituloEl.textContent = texto;
   botaoVoltar.hidden = !comVoltar;
-  document.title = texto === 'Cubagem' ? 'Cubagem Brazil Wood' : `${texto} · Cubagem`;
+  document.title = texto === NOME_APP ? NOME_APP : `${texto} · ${NOME_APP}`;
 }
 
 function ir(hash) {

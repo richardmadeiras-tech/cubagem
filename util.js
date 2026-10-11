@@ -1,3 +1,5 @@
+export const NOME_APP = 'Romaneador 2.0';
+
 // Lê um número digitado pelo usuário. Aceita vírgula ou ponto; devolve NaN se não for um número simples >= 0.
 export function parseDecimal(texto) {
   const s = String(texto ?? '').trim().replace(',', '.');
@@ -8,6 +10,11 @@ export function parseDecimal(texto) {
 // Volume com 3 casas e vírgula: 0.354645 -> "0,355"
 export function fmt3(n) {
   return n.toFixed(3).replace('.', ',');
+}
+
+// Área com 2 casas e vírgula: 15.4187 -> "15,42"
+export function fmt2(n) {
+  return n.toFixed(2).replace('.', ',');
 }
 
 // Medida como o usuário digitou, com vírgula: 2.3 -> "2,3"

@@ -15,7 +15,7 @@ export function htmlToras(lote, memoria = { especie: '' }) {
       <tr>
         <td>${esc(t.numero || i + 1)}${t.especie ? `<br><small class="especie">${esc(t.especie)}</small>` : ''}</td>
         <td>${fmtNum(t.compraPonta)} / ${fmtNum(t.compraPe)}<br><small>${fmtNum(t.compraComp)} m</small><br><strong>${fmt3(volumeCompra(t))}</strong></td>
-        <td>${fmtNum(t.ibamaPe)} / ${fmtNum(t.ibamaPonta)}<br><small>${fmtNum(t.ibamaComp)} m</small><br><strong>${fmt3(volumeIbama(t))}</strong></td>
+        <td>${fmtNum(t.ibamaPonta)} / ${fmtNum(t.ibamaPe)}<br><small>${fmtNum(t.ibamaComp)} m</small><br><strong>${fmt3(volumeIbama(t))}</strong></td>
         <td><button class="icone" data-acao="remover" data-i="${i}" aria-label="Remover tora">🗑</button></td>
       </tr>`,
     )
@@ -32,15 +32,15 @@ export function htmlToras(lote, memoria = { especie: '' }) {
       <label>Compra · Pé (cm)<input name="compraPe" inputmode="decimal" autocomplete="off"></label>
       <label>Compra · Comprimento (m)<input name="compraComp" inputmode="decimal" autocomplete="off"></label>
       <p class="grupo">IBAMA</p>
-      <label>IBAMA · Pé (cm)<input name="ibamaPe" inputmode="decimal" autocomplete="off"></label>
       <label>IBAMA · Ponta (cm)<input name="ibamaPonta" inputmode="decimal" autocomplete="off"></label>
+      <label>IBAMA · Pé (cm)<input name="ibamaPe" inputmode="decimal" autocomplete="off"></label>
       <label>IBAMA · Comprimento (m)<input name="ibamaComp" inputmode="decimal" autocomplete="off"></label>
       <button class="primario" type="submit">Adicionar tora</button>
     </form>
     <p class="dica">Compra: medidas sem alburno. IBAMA: medidas totais, com alburno. Cada conta tem o seu comprimento (o do IBAMA acompanha o da Compra até você mudar).</p>
     <div class="tabela-rolagem">
       <table>
-        <thead><tr><th>Nº</th><th>Compra<br><small>Ponta / Pé</small></th><th>IBAMA<br><small>Pé / Ponta</small></th><th></th></tr></thead>
+        <thead><tr><th>Nº</th><th>Compra<br><small>Ponta / Pé</small></th><th>IBAMA<br><small>Ponta / Pé</small></th><th></th></tr></thead>
         <tbody>${linhas || '<tr><td colspan="4" class="vazio">Nenhuma tora ainda.</td></tr>'}</tbody>
       </table>
     </div>

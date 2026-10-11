@@ -83,7 +83,7 @@ export function totaisPacote(pecas) {
 }
 
 // ---------- Tora ----------
-// Compra: Ponta, Pé e Comprimento. IBAMA: Pé, Ponta e Comprimento. Cada conta tem o seu comprimento.
+// Compra: Ponta, Pé e Comprimento. IBAMA: Ponta, Pé e Comprimento. Cada conta tem o seu comprimento.
 
 // Diâmetro em cm -> área do círculo em m².
 export function areaCirculo(diametroCm) {
@@ -93,8 +93,7 @@ export function areaCirculo(diametroCm) {
 // Média das áreas das duas pontas × comprimento (Smalian).
 const smalian = (diametroA, diametroB, comp) => ((areaCirculo(diametroA) + areaCirculo(diametroB)) / 2) * comp;
 
-// Compra (medidas sem alburno). FÓRMULA PROVISÓRIA: igual à do IBAMA, a confirmar com o Richard.
-// Para trocar a conta da compra, basta mexer só nesta função.
+// Compra (medidas sem alburno): média das áreas de Ponta e Pé × comprimento da Compra (confirmado pelo Richard).
 export function volumeCompra({ compraPonta, compraPe, compraComp }) {
   return smalian(compraPonta, compraPe, compraComp);
 }

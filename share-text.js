@@ -33,7 +33,7 @@ export function textoToras(lote) {
   const blocos = lote.toras.flatMap((t, i) => [
     [t.numero || i + 1, t.especie].filter(Boolean).join(' '),
     `Compra: Ponta ${fmtNum(t.compraPonta)} | Pé ${fmtNum(t.compraPe)} | Comp ${fmtNum(t.compraComp)} = ${fmt3(volumeCompra(t))} m³`,
-    `IBAMA: Pé ${fmtNum(t.ibamaPe)} | Ponta ${fmtNum(t.ibamaPonta)} | Comp ${fmtNum(t.ibamaComp)} = ${fmt3(volumeIbama(t))} m³`,
+    `IBAMA: Ponta ${fmtNum(t.ibamaPonta)} | Pé ${fmtNum(t.ibamaPe)} | Comp ${fmtNum(t.ibamaComp)} = ${fmt3(volumeIbama(t))} m³`,
     '',
   ]);
   const total = totaisLote(lote.toras);

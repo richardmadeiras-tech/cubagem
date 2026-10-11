@@ -1,5 +1,5 @@
 // Aumente VERSAO sempre que qualquer arquivo do app mudar, senão o celular fica com a versão antiga.
-const VERSAO = 'cubagem-v6';
+const VERSAO = 'cubagem-v7';
 const ARQUIVOS = [
   './',
   'index.html',

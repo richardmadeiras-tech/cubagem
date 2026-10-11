@@ -25,16 +25,16 @@ export function htmlToras(lote, memoria = { especie: '' }) {
     <form id="form-tora" class="entrada" novalidate>
       <label>Nº da tora (opcional)<input name="numero" inputmode="text" autocomplete="off" placeholder="${lote.toras.length + 1}"></label>
       <label>Espécie desta tora (opcional)<input name="especie" inputmode="text" autocomplete="off" value="${esc(memoria.especie)}"></label>
-      <label>Compra · Ø cerne (cm)<input name="cerne" inputmode="decimal" autocomplete="off"></label>
-      <label>IBAMA · Ø ponta (cm)<input name="ponta" inputmode="decimal" autocomplete="off"></label>
-      <label>IBAMA · Ø pé (cm)<input name="pe" inputmode="decimal" autocomplete="off"></label>
+      <label>Compra (cm)<input name="cerne" inputmode="decimal" autocomplete="off"></label>
+      <label>IBAMA · Ponta (cm)<input name="ponta" inputmode="decimal" autocomplete="off"></label>
+      <label>IBAMA · Pé (cm)<input name="pe" inputmode="decimal" autocomplete="off"></label>
       <label>Comprimento (m)<input name="comp" inputmode="decimal" autocomplete="off"></label>
       <button class="primario" type="submit">Adicionar tora</button>
     </form>
-    <p class="dica">Compra: só o cerne, na ponta fina (sem alburno). IBAMA: Ø ponta e Ø pé, diâmetros totais, com alburno.</p>
+    <p class="dica">Compra: só a ponta fina, sem alburno. IBAMA: Ponta e Pé, diâmetros totais, com alburno.</p>
     <div class="tabela-rolagem">
       <table>
-        <thead><tr><th>Nº</th><th>Cerne</th><th>Ponta</th><th>Pé</th><th>Comp</th><th>Compra</th><th>IBAMA</th><th></th></tr></thead>
+        <thead><tr><th>Nº</th><th>Compra</th><th>Ponta</th><th>Pé</th><th>Comp</th><th>m³ Compra</th><th>m³ IBAMA</th><th></th></tr></thead>
         <tbody>${linhas || '<tr><td colspan="8" class="vazio">Nenhuma tora ainda.</td></tr>'}</tbody>
       </table>
     </div>

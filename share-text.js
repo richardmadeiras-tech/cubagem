@@ -44,7 +44,7 @@ export function textoToras(lote) {
   return [
     `🌳 ${titulo}`,
     '',
-    'Nº | Cerne | Ponta | Pé | Comp | Compra | IBAMA',
+    'Nº | Compra | Ponta | Pé | Comp | m³ Compra | m³ IBAMA',
     ...linhas,
     '',
     `TOTAL (${plural(total.toras, 'tora', 'toras')})`,

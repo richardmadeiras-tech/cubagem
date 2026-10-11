@@ -98,8 +98,8 @@ export function validarTora({ cerne, ponta, pe, comp }) {
 // Avisos de medida suspeita. Não impedem o lançamento.
 export function avisosTora({ cerne, ponta, pe }) {
   const avisos = [];
-  if (cerne > ponta) avisos.push('O cerne é maior que a ponta total. Confira as medidas.');
-  if (pe < ponta) avisos.push('O pé é menor que a ponta. Confira as medidas.');
+  if (cerne > ponta) avisos.push('A medida de Compra é maior que a Ponta do IBAMA. Confira as medidas.');
+  if (pe < ponta) avisos.push('O Pé é menor que a Ponta. Confira as medidas.');
   return avisos;
 }
 

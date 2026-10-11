@@ -49,6 +49,11 @@ input {
 .seletor { display: flex; margin-bottom: 14px; border: 2px solid var(--amarelo); border-radius: 12px; overflow: hidden; }
 .opcao { flex: 1; border: 0; border-radius: 0; background: var(--papel); font-weight: 600; min-height: 48px; }
 .opcao[aria-pressed="true"] { background: var(--amarelo); color: var(--fundo); font-weight: 700; }
+.entrada .grupo {
+  grid-column: 1 / -1; margin: 6px 0 0; padding-top: 8px; border-top: 1px solid var(--linha);
+  font-weight: 700; color: var(--amarelo); text-transform: uppercase; letter-spacing: .04em; font-size: .9rem;
+}
+.entrada label:has([name$="Comp"]) { grid-column: 1 / -1; }
 .linha-comp { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 10px; }
 .dica { font-size: .8rem; color: var(--suave); margin: 0 0 14px; }
 

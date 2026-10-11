@@ -83,34 +83,42 @@ export function totaisPacote(pecas) {
 }
 
 // ---------- Tora ----------
+// Compra: Ponta, Pé e Comprimento. IBAMA: Pé, Ponta e Comprimento. Cada conta tem o seu comprimento.
 
 // Diâmetro em cm -> área do círculo em m².
 export function areaCirculo(diametroCm) {
   return PI_4 * (diametroCm / 100) ** 2;
 }
 
-// Compra: cilindro só com o cerne (ponta fina).
-export function volumeCompra({ cerne, comp }) {
-  return areaCirculo(cerne) * comp;
+// Média das áreas das duas pontas × comprimento (Smalian).
+const smalian = (diametroA, diametroB, comp) => ((areaCirculo(diametroA) + areaCirculo(diametroB)) / 2) * comp;
+
+// Compra (medidas sem alburno). FÓRMULA PROVISÓRIA: igual à do IBAMA, a confirmar com o Richard.
+// Para trocar a conta da compra, basta mexer só nesta função.
+export function volumeCompra({ compraPonta, compraPe, compraComp }) {
+  return smalian(compraPonta, compraPe, compraComp);
 }
 
-// IBAMA: Smalian com os diâmetros totais (com alburno) da ponta e do pé.
-export function volumeIbama({ ponta, pe, comp }) {
-  return ((areaCirculo(ponta) + areaCirculo(pe)) / 2) * comp;
+// IBAMA (medidas totais, com alburno).
+export function volumeIbama({ ibamaPonta, ibamaPe, ibamaComp }) {
+  return smalian(ibamaPonta, ibamaPe, ibamaComp);
 }
 
-export function validarTora({ cerne, ponta, pe, comp }) {
-  if (![cerne, ponta, pe, comp].every(positivo)) {
-    return 'Cerne, ponta, pé e comprimento precisam ser números maiores que zero.';
+export function validarTora(tora) {
+  const medidas = ['compraPonta', 'compraPe', 'compraComp', 'ibamaPe', 'ibamaPonta', 'ibamaComp'];
+  if (!medidas.every(m => positivo(tora[m]))) {
+    return 'Compra e IBAMA precisam de Ponta, Pé e Comprimento, todos números maiores que zero.';
   }
   return null;
 }
 
 // Avisos de medida suspeita. Não impedem o lançamento.
-export function avisosTora({ cerne, ponta, pe }) {
+export function avisosTora({ compraPonta, compraPe, ibamaPe, ibamaPonta }) {
   const avisos = [];
-  if (cerne > ponta) avisos.push('A medida de Compra é maior que a Ponta do IBAMA. Confira as medidas.');
-  if (pe < ponta) avisos.push('O Pé é menor que a Ponta. Confira as medidas.');
+  if (compraPonta > ibamaPonta) avisos.push('A Ponta da Compra é maior que a Ponta do IBAMA. Confira as medidas.');
+  if (compraPe > ibamaPe) avisos.push('O Pé da Compra é maior que o Pé do IBAMA. Confira as medidas.');
+  if (ibamaPe < ibamaPonta) avisos.push('No IBAMA o Pé é menor que a Ponta. Confira as medidas.');
+  if (compraPe < compraPonta) avisos.push('Na Compra o Pé é menor que a Ponta. Confira as medidas.');
   return avisos;
 }
 
@@ -118,4 +126,16 @@ export function totaisLote(toras) {
   const compra = toras.reduce((soma, t) => soma + volumeCompra(t), 0);
   const ibama = toras.reduce((soma, t) => soma + volumeIbama(t), 0);
   return { toras: toras.length, compra, ibama, diferenca: ibama - compra };
+}
+
+// Converte uma tora do formato antigo (uma medida de compra: cerne) para o novo, sem mudar nenhum volume:
+// com Ponta = Pé = cerne, a média das áreas é a área do cilindro, igual à conta antiga.
+export function normalizarTora(tora) {
+  if (Number.isFinite(tora.compraPonta)) return { ...tora };
+  const { cerne, ponta, pe, comp, ...resto } = tora;
+  return {
+    ...resto,
+    compraPonta: cerne, compraPe: cerne, compraComp: comp,
+    ibamaPe: pe, ibamaPonta: ponta, ibamaComp: comp,
+  };
 }

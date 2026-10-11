@@ -1,4 +1,5 @@
 import { hojeISO } from './util.js';
+import { normalizarTora } from './calc.js';
 
 const CHAVE = 'cubagem:v1';
 
@@ -21,16 +22,21 @@ function itemValido(i) {
     return Array.isArray(i.pecas) && i.pecas.every(p => numerico(p, ['esp', 'larg', 'comp', 'qtd']));
   }
   if (i.tipo === 'toras') {
-    return Array.isArray(i.toras) && i.toras.every(t => numerico(t, ['cerne', 'ponta', 'pe', 'comp']));
+    const novas = ['compraPonta', 'compraPe', 'compraComp', 'ibamaPe', 'ibamaPonta', 'ibamaComp'];
+    const antigas = ['cerne', 'ponta', 'pe', 'comp']; // formato anterior (uma medida de compra só)
+    return Array.isArray(i.toras) && i.toras.every(t => numerico(t, novas) || numerico(t, antigas));
   }
   return false;
 }
+
+// Lançamentos antigos de toras são convertidos ao abrir.
+const normalizarItem = i => (i.tipo === 'toras' ? { ...i, toras: i.toras.map(normalizarTora) } : i);
 
 function carregar(storage) {
   try {
     const bruto = storage.getItem(CHAVE);
     const dados = bruto ? JSON.parse(bruto) : [];
-    return Array.isArray(dados) ? dados.filter(itemValido) : [];
+    return Array.isArray(dados) ? dados.filter(itemValido).map(normalizarItem) : [];
   } catch {
     return [];
   }
@@ -95,7 +101,7 @@ export function criarStore(storage) {
       if (!dados || dados.app !== 'cubagem' || !Array.isArray(dados.itens)) {
         return { ok: false, erro: ERRO_ARQUIVO };
       }
-      const validos = dados.itens.filter(itemValido);
+      const validos = dados.itens.filter(itemValido).map(normalizarItem);
       if (validos.length === 0) {
         return { ok: false, erro: 'A cópia de segurança não tem nenhum lançamento válido.' };
       }

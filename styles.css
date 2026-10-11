@@ -49,6 +49,7 @@ input {
 .cab label:first-child { grid-column: 1 / -1; }
 .entrada { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
 .entrada .larga, .entrada .primario { grid-column: 1 / -1; }
+.linha-comp { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 10px; }
 .dica { font-size: .8rem; color: var(--suave); margin: 0 0 14px; }
 
 .tabela-rolagem { overflow-x: auto; }

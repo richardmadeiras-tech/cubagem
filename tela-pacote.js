@@ -1,9 +1,21 @@
 import { esc, fmt3, fmtNum, parseDecimal } from './util.js';
-import { validarPeca, adicionarPeca, substituirPeca, totaisPacote, volumePeca } from './calc.js';
+import {
+  validarPeca, adicionarPeca, substituirPeca, pecasDeComprimentos, totaisPacote, volumePeca,
+} from './calc.js';
 import { textoPacote } from './share-text.js';
 import { enviarWhatsApp, copiarTexto } from './compartilhar.js';
 
-// `editando` = índice da linha que está sendo corrigida (ou null para lançar uma peça nova).
+const LINHAS_INICIAIS = 3;
+
+// Uma linha em branco de "comprimento × quantidade" (a quantidade começa em 1).
+export function htmlLinhaComprimento() {
+  return `<div class="linha-comp">
+        <label>Comprimento (m)<input data-comp inputmode="decimal" autocomplete="off"></label>
+        <label>Qtd<input data-qtd inputmode="numeric" autocomplete="off" value="1"></label>
+      </div>`;
+}
+
+// `editando` = índice da linha que está sendo corrigida (ou null para lançar peças novas).
 export function htmlPacote(p, memoria = { esp: '', larg: '' }, editando = null) {
   const t = totaisPacote(p.pecas);
   const semPecas = p.pecas.length === 0;
@@ -12,7 +24,7 @@ export function htmlPacote(p, memoria = { esp: '', larg: '' }, editando = null) 
     : null;
   const v = linhaEmEdicao
     ? { esp: fmtNum(linhaEmEdicao.esp), larg: fmtNum(linhaEmEdicao.larg), comp: fmtNum(linhaEmEdicao.comp), qtd: String(linhaEmEdicao.qtd) }
-    : { esp: memoria.esp, larg: memoria.larg, comp: '', qtd: '1' };
+    : { esp: memoria.esp, larg: memoria.larg };
   const linhas = p.pecas
     .map((x, i) => {
       const toque = `class="editavel" data-acao="editar" data-i="${i}"`;
@@ -29,10 +41,14 @@ export function htmlPacote(p, memoria = { esp: '', larg: '' }, editando = null) 
       </tr>`;
     })
     .join('');
-  const botoes = linhaEmEdicao
-    ? `<button class="primario" type="submit">Salvar alteração</button>
+  const campos = linhaEmEdicao
+    ? `<label>Comprimento (m)<input name="comp" inputmode="decimal" autocomplete="off" value="${esc(v.comp)}"></label>
+      <label>Quantidade<input name="qtd" inputmode="numeric" autocomplete="off" value="${esc(v.qtd)}"></label>
+      <button class="primario" type="submit">Salvar alteração</button>
       <button class="larga" type="button" data-acao="cancelar-edicao">Cancelar</button>`
-    : '<button class="primario" type="submit">Adicionar peça</button>';
+    : `<div class="comprimentos larga" id="comprimentos">${htmlLinhaComprimento().repeat(LINHAS_INICIAIS)}</div>
+      <button class="larga" type="button" data-acao="mais-comprimento">+ Outro comprimento</button>
+      <button class="primario" type="submit">Adicionar peças</button>`;
   return `
     <section class="cab">
       <label>Nº do pacote<input data-campo="numero" value="${esc(p.numero)}" autocomplete="off"></label>
@@ -42,9 +58,7 @@ export function htmlPacote(p, memoria = { esp: '', larg: '' }, editando = null) 
     <form id="form-peca" class="entrada" novalidate>
       <label>Espessura (cm)<input name="esp" inputmode="decimal" autocomplete="off" value="${esc(v.esp)}"></label>
       <label>Largura (cm)<input name="larg" inputmode="decimal" autocomplete="off" value="${esc(v.larg)}"></label>
-      <label>Comprimento (m)<input name="comp" inputmode="decimal" autocomplete="off" value="${esc(v.comp)}"></label>
-      <label>Quantidade<input name="qtd" inputmode="numeric" autocomplete="off" value="${esc(v.qtd)}"></label>
-      ${botoes}
+      ${campos}
     </form>
     <div class="tabela-rolagem">
       <table>
@@ -74,7 +88,11 @@ export function montarPacote({ raiz, store, avisar, titulo }, id) {
   const desenhar = focar => {
     raiz.innerHTML = htmlPacote(atual, memoria, editando);
     ligar();
-    if (focar) raiz.querySelector(`[name="${focar}"]`)?.focus();
+    if (focar === 'comp') {
+      (raiz.querySelector('[name="comp"]') ?? raiz.querySelector('[data-comp]'))?.focus();
+    } else if (focar) {
+      raiz.querySelector(`[name="${focar}"]`)?.focus();
+    }
   };
 
   function ligar() {
@@ -85,20 +103,38 @@ export function montarPacote({ raiz, store, avisar, titulo }, id) {
     raiz.querySelector('#form-peca').addEventListener('submit', evento => {
       evento.preventDefault();
       const f = evento.target.elements;
-      const nova = {
-        esp: parseDecimal(f.esp.value),
-        larg: parseDecimal(f.larg.value),
-        comp: parseDecimal(f.comp.value),
-        qtd: parseDecimal(f.qtd.value),
-      };
-      const erro = validarPeca(nova);
-      if (erro) { avisar(erro); return; }
-      const corrigindo = editando !== null;
-      salvar({ pecas: corrigindo ? substituirPeca(atual.pecas, editando, nova) : adicionarPeca(atual.pecas, nova) });
-      editando = null;
+      if (editando !== null) {
+        const nova = {
+          esp: parseDecimal(f.esp.value),
+          larg: parseDecimal(f.larg.value),
+          comp: parseDecimal(f.comp.value),
+          qtd: parseDecimal(f.qtd.value),
+        };
+        const erro = validarPeca(nova);
+        if (erro) { avisar(erro); return; }
+        salvar({ pecas: substituirPeca(atual.pecas, editando, nova) });
+        editando = null;
+        memoria = { esp: f.esp.value.trim(), larg: f.larg.value.trim() };
+        desenhar('comp');
+        avisar('Linha corrigida.');
+        return;
+      }
+      const linhas = [...raiz.querySelectorAll('.linha-comp')].map(l => ({
+        comp: l.querySelector('[data-comp]').value,
+        qtd: l.querySelector('[data-qtd]').value,
+      }));
+      const r = pecasDeComprimentos({ esp: parseDecimal(f.esp.value), larg: parseDecimal(f.larg.value) }, linhas);
+      if (r.erro) { avisar(r.erro); return; }
+      salvar({ pecas: r.pecas.reduce((lista, p) => adicionarPeca(lista, p), atual.pecas) });
       memoria = { esp: f.esp.value.trim(), larg: f.larg.value.trim() };
       desenhar('comp');
-      if (corrigindo) avisar('Linha corrigida.');
+      avisar(r.pecas.length === 1 ? 'Peça adicionada.' : `${r.pecas.length} comprimentos adicionados.`);
+    });
+
+    raiz.querySelector('[data-acao="mais-comprimento"]')?.addEventListener('click', () => {
+      const lista = raiz.querySelector('#comprimentos');
+      lista.insertAdjacentHTML('beforeend', htmlLinhaComprimento());
+      lista.lastElementChild.querySelector('[data-comp]').focus();
     });
 
     raiz.querySelector('[data-acao="cancelar-edicao"]')?.addEventListener('click', () => {

@@ -1,3 +1,5 @@
+import { parseDecimal } from './util.js';
+
 const PI_4 = Math.PI / 4;
 
 const positivo = n => Number.isFinite(n) && n > 0;
@@ -26,6 +28,32 @@ export function adicionarPeca(pecas, nova) {
     ? pecas.map(p => (mesma(p) ? { ...p, qtd: p.qtd + nova.qtd } : { ...p }))
     : [...pecas.map(p => ({ ...p })), { ...nova }];
   return lista.sort((a, b) => a.esp - b.esp || a.larg - b.larg || a.comp - b.comp);
+}
+
+// Vários comprimentos de uma vez, com a mesma espessura e largura. `linhas` = [{comp, qtd}] como texto digitado.
+// Linhas totalmente em branco são ignoradas; quantidade em branco vale 1. Tudo ou nada: se uma linha estiver
+// errada, não devolve peça nenhuma e diz qual é a linha.
+export function pecasDeComprimentos({ esp, larg }, linhas) {
+  const falha = erro => ({ pecas: [], erro });
+  if (![esp, larg].every(positivo)) return falha('Espessura e largura precisam ser números maiores que zero.');
+  const pecas = [];
+  for (let i = 0; i < linhas.length; i++) {
+    const compTxt = String(linhas[i].comp ?? '').trim();
+    const qtdTxt = String(linhas[i].qtd ?? '').trim();
+    if (compTxt === '') {
+      if (qtdTxt === '' || qtdTxt === '1') continue; // linha em branco
+      return falha(`Linha ${i + 1}: falta o comprimento.`);
+    }
+    const comp = parseDecimal(compTxt);
+    if (!positivo(comp)) return falha(`Linha ${i + 1}: o comprimento precisa ser um número maior que zero.`);
+    const qtd = qtdTxt === '' ? 1 : parseDecimal(qtdTxt);
+    if (!Number.isInteger(qtd) || qtd < 1) {
+      return falha(`Linha ${i + 1}: a quantidade precisa ser um número inteiro de 1 ou mais.`);
+    }
+    pecas.push({ esp, larg, comp, qtd });
+  }
+  if (pecas.length === 0) return falha('Preencha pelo menos um comprimento.');
+  return { pecas, erro: null };
 }
 
 // Troca as medidas da linha `indice` por `nova` (soma se a medida já existe em outra linha).

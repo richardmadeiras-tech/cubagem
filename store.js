@@ -2,6 +2,7 @@ import { hojeISO } from './util.js';
 import { normalizarTora } from './calc.js';
 
 const CHAVE = 'cubagem:v1';
+const CHAVE_APAGADOS = 'cubagem:apagados'; // id -> momento da exclusão (para a sincronização)
 
 export function novoId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -42,10 +43,21 @@ function carregar(storage) {
   }
 }
 
+function carregarApagados(storage) {
+  try {
+    const dados = JSON.parse(storage.getItem(CHAVE_APAGADOS) || '{}');
+    return dados && typeof dados === 'object' && !Array.isArray(dados) ? dados : {};
+  } catch {
+    return {};
+  }
+}
+
 const ERRO_ARQUIVO = 'O arquivo não é uma cópia de segurança válida do app de cubagem.';
 
 export function criarStore(storage) {
   let itens = carregar(storage);
+  let apagados = carregarApagados(storage);
+  const ouvintes = [];
   let persistente = true;
   let relogio = itens.reduce((maior, i) => Math.max(maior, i.atualizado || 0), 0);
   const agora = () => (relogio = Math.max(Date.now(), relogio + 1));
@@ -53,11 +65,14 @@ export function criarStore(storage) {
   const gravar = () => {
     try {
       storage.setItem(CHAVE, JSON.stringify(itens));
+      storage.setItem(CHAVE_APAGADOS, JSON.stringify(apagados));
       persistente = true;
     } catch {
       persistente = false;
     }
   };
+
+  const avisarMudanca = () => ouvintes.forEach(f => f());
 
   const gravarItem = item => {
     const novo = { ...item, atualizado: agora() };
@@ -73,11 +88,14 @@ export function criarStore(storage) {
     salvar(item) {
       const novo = gravarItem(item);
       gravar();
+      avisarMudanca();
       return novo;
     },
     apagar(id) {
       itens = itens.filter(i => i.id !== id);
+      apagados = { ...apagados, [id]: agora() };
       gravar();
+      avisarMudanca();
     },
     // Cópia independente: id novo, data de hoje e, no pacote, sem número (para não repetir o número).
     duplicar(id, hoje = hojeISO()) {
@@ -87,7 +105,27 @@ export function criarStore(storage) {
       if (copia.tipo === 'pacote') copia.numero = '';
       const nova = gravarItem(copia);
       gravar();
+      avisarMudanca();
       return nova;
+    },
+    // --- sincronização (veja sync.js) ---
+    aoMudar: f => ouvintes.push(f),
+    todos: () => [...itens],
+    apagadosLocais: () => ({ ...apagados }),
+    // Aplica o que veio do servidor sem alterar o relógio do item. Devolve false se o item for inválido.
+    aplicarRemoto(item) {
+      if (!itemValido(item) || !Number.isFinite(item.atualizado)) return false;
+      const novo = normalizarItem(item);
+      relogio = Math.max(relogio, novo.atualizado);
+      itens = itens.some(i => i.id === novo.id) ? itens.map(i => (i.id === novo.id ? novo : i)) : [...itens, novo];
+      if (apagados[novo.id]) { apagados = { ...apagados }; delete apagados[novo.id]; }
+      gravar();
+      return true;
+    },
+    removerRemoto(id, momento) {
+      itens = itens.filter(i => i.id !== id);
+      apagados = { ...apagados, [id]: momento };
+      gravar();
     },
     persistente: () => persistente,
     exportar: () => JSON.stringify({ app: 'cubagem', versao: 1, itens }, null, 2),
@@ -122,6 +160,7 @@ export function criarStore(storage) {
         }
       }
       gravar();
+      avisarMudanca();
       return { ok: true, importados, ignorados: dados.itens.length - validos.length + repetidos };
     },
   };

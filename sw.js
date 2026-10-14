@@ -1,5 +1,5 @@
 // Aumente VERSAO sempre que qualquer arquivo do app mudar, senão o celular fica com a versão antiga.
-const VERSAO = 'cubagem-v11';
+const VERSAO = 'cubagem-v12';
 const ARQUIVOS = [
   './',
   'index.html',
@@ -11,8 +11,10 @@ const ARQUIVOS = [
   'app.js',
   'calc.js',
   'compartilhar.js',
+  'config.js',
   'share-text.js',
   'store.js',
+  'sync.js',
   'tela-inicio.js',
   'tela-pacote.js',
   'tela-toras.js',

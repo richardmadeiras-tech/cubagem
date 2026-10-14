@@ -3,6 +3,7 @@ import { NOME_APP } from './util.js';
 import { montarInicio } from './tela-inicio.js';
 import { montarPacote } from './tela-pacote.js';
 import { montarToras } from './tela-toras.js';
+import { iniciarSync } from './sync.js';
 
 function armazenamento() {
   try { return window.localStorage; } catch { return null; }
@@ -66,6 +67,12 @@ function rotear() {
 botaoVoltar.addEventListener('click', () => ir('#/'));
 window.addEventListener('hashchange', rotear);
 rotear();
+
+// Só redesenha a lista; uma tela de edição aberta não é trocada por baixo do usuário.
+iniciarSync(store, {
+  aoAtualizar: () => { if (!location.hash || location.hash === '#/') rotear(); },
+  aoFalhar: () => {},
+});
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
